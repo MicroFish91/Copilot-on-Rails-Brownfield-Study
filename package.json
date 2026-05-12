@@ -1,0 +1,35 @@
+{
+  "name": "duo-scrapbook",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A couples-only photo scrapbook with AI-generated captions",
+  "workspaces": [
+    "src/shared",
+    "src/functions",
+    "src/web"
+  ],
+  "scripts": {
+    "build:shared": "npm --workspace src/shared run build",
+    "build:functions": "npm --workspace src/functions run build",
+    "build:web": "npm --workspace src/web run build",
+    "build": "npm run build:shared && npm run build:functions && npm run build:web",
+    "dev:web": "npm --workspace src/web run dev",
+    "dev:functions": "npm --workspace src/functions run start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "npm --workspace src/shared run lint --if-present && npm --workspace src/functions run lint --if-present && npm --workspace src/web run lint --if-present",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
+    "migrate": "npm --workspace src/functions run migrate",
+    "seed": "npm --workspace src/functions run seed"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.0",
+    "prettier": "^3.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

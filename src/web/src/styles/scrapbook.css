@@ -1,0 +1,320 @@
+/* ---------- Page layout ----------------------------------------------- */
+.scrapbook-page,
+.settings-page,
+.onboard-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.4rem 4rem;
+}
+
+.couple-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0.5rem 0 1.4rem;
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 1.4rem;
+}
+.couple-banner__sub {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1rem;
+}
+.couple-banner__avatars {
+  display: flex;
+  gap: -0.6rem;
+}
+.avatar {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  margin-left: -0.6rem;
+  border: 2px solid var(--bg-paper);
+  box-shadow: var(--shadow-sm);
+}
+
+.page-nav {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.92rem;
+}
+.page-nav a {
+  color: var(--accent);
+}
+
+/* ---------- Uploader -------------------------------------------------- */
+.photo-uploader {
+  margin-bottom: 1.6rem;
+}
+.photo-uploader__drop {
+  display: block;
+  background: var(--bg-paper);
+  border: 2px dashed var(--accent-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.photo-uploader__drop:hover {
+  background: #fffaf2;
+}
+.photo-uploader__drop input[type='file'] {
+  display: none;
+}
+.photo-uploader__cta {
+  display: block;
+  font-family: 'Caveat', cursive;
+  font-size: 1.6rem;
+  color: var(--accent);
+}
+.photo-uploader__hint {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+.photo-uploader__error {
+  margin: 0.6rem 0 0;
+  color: #b03939;
+  font-size: 0.9rem;
+}
+
+/* ---------- Invite card ---------------------------------------------- */
+.invite-card {
+  background: var(--accent-soft);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.2rem;
+  margin: 0 0 1.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-shadow: var(--shadow-sm);
+}
+.invite-card__label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.invite-card__code {
+  font-family: 'Courier New', monospace;
+  font-size: 1.7rem;
+  letter-spacing: 0.18em;
+  margin: 0.2rem 0 0.4rem;
+  color: var(--ink);
+}
+.invite-card__copy {
+  background: var(--ink);
+  border: none;
+  color: white;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius);
+}
+.invite-card__hint {
+  margin: 0.6rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+/* ---------- Scrapbook grid ------------------------------------------- */
+.scrapbook-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.6rem;
+}
+.scrapbook-grid__item {
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.18s ease;
+}
+.scrapbook-grid__item:hover {
+  transform: rotate(0deg) translateY(-3px);
+}
+.scrapbook-card {
+  background: var(--bg-paper);
+  padding: 0.6rem 0.6rem 0.9rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.scrapbook-card::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-3deg);
+  width: 56px;
+  height: 14px;
+  background: rgba(212, 200, 180, 0.55);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+.scrapbook-card__photo {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: zoom-in;
+}
+.scrapbook-card__photo img {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 2px;
+  background: #efe6dc;
+}
+.scrapbook-card__photo--skeleton {
+  height: 220px;
+  background: linear-gradient(90deg, #efe6dc 25%, #f8f1e8 50%, #efe6dc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 2px;
+}
+.scrapbook-card__body {
+  padding: 0.7rem 0.4rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.scrapbook-card__caption {
+  font-family: 'Caveat', cursive;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  margin: 0;
+  color: var(--ink);
+}
+.scrapbook-card__meta {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.scrapbook-card__dot {
+  margin: 0 0.4rem;
+}
+.scrapbook-card__actions {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+}
+
+/* ---------- Lightbox -------------------------------------------------- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 14, 28, 0.78);
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  z-index: 999;
+}
+.lightbox__inner {
+  background: var(--bg-paper);
+  padding: 0.6rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  max-width: min(900px, 100%);
+  margin: 0;
+  position: relative;
+}
+.lightbox__inner img {
+  max-width: 100%;
+  max-height: 75vh;
+  display: block;
+  border-radius: 2px;
+}
+.lightbox__caption {
+  font-family: 'Caveat', cursive;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-top: 0.6rem;
+  color: var(--ink);
+}
+.lightbox__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ---------- Onboard --------------------------------------------------- */
+.onboard-page__sub {
+  color: var(--ink-soft);
+  margin: 0.25rem 0 1.6rem;
+}
+.onboard-page__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.4rem;
+}
+.onboard-card {
+  background: var(--bg-paper);
+  padding: 1.4rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.onboard-card h2 {
+  margin-bottom: 0.5rem;
+}
+.onboard-card__continue {
+  margin-top: 0.8rem;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.onboard-page__error {
+  color: #b03939;
+  margin-top: 1rem;
+}
+
+/* ---------- Settings -------------------------------------------------- */
+.settings-page__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.4rem;
+}
+.settings-page__head a {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+.settings-card {
+  background: var(--bg-paper);
+  padding: 1.4rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.2rem;
+}
+.settings-form__email {
+  color: var(--ink-soft);
+  margin: -0.4rem 0 0.8rem;
+  font-size: 0.9rem;
+}
+.settings-form__error {
+  color: #b03939;
+  font-size: 0.9rem;
+}
+.settings-form__ok {
+  color: #2f7a3a;
+  margin-left: 0.6rem;
+}

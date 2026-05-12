@@ -1,0 +1,42 @@
+{
+  "name": "@duo-scrapbook/functions",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Azure Functions v4 backend for duo-scrapbook",
+  "main": "dist/functions/*.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "clean": "rimraf dist",
+    "prestart": "npm run build",
+    "start": "func start",
+    "test": "vitest run",
+    "lint": "eslint \"src/**/*.ts\"",
+    "migrate": "knex --knexfile seeds/knexfile.cjs migrate:latest",
+    "migrate:rollback": "knex --knexfile seeds/knexfile.cjs migrate:rollback",
+    "seed": "knex --knexfile seeds/knexfile.cjs seed:run"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.1",
+    "@azure/identity": "^4.4.1",
+    "@azure/openai": "^2.0.0",
+    "@azure/storage-blob": "^12.24.0",
+    "@duo-scrapbook/shared": "*",
+    "bcryptjs": "^2.4.3",
+    "knex": "^3.1.0",
+    "openai": "^4.65.0",
+    "pg": "^8.13.0",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.16.0",
+    "@types/pg": "^8.11.10",
+    "@vitest/coverage-v8": "^2.1.0",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
