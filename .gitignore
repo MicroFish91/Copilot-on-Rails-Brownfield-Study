@@ -19,9 +19,6 @@ local.settings.json
 !**/local.settings.json.example
 
 # Editor
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json.example
 .idea/
 *.swp
 *.swo
@@ -34,9 +31,6 @@ Thumbs.db
 bin/
 obj/
 .azurefunctions/
-__azurite_db_*
-__blobstorage__/
-__queuestorage__/
 
 # Vite
 src/web/dist/
