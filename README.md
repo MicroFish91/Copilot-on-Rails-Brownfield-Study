@@ -2,6 +2,10 @@
 
 A couples-only photo scrapbook with AI-generated captions.
 
+## Originating Prompt
+
+I'd like to create an app. I want it to have a sign in page with authentication. I want it to be an app where you can upload photos under your account. You are coupled with another user and all of your photos can be uploaded together. You have a UI that looks like a scrapbook where the photos automatically go with an AI generated caption for the photo. Make it with full test coverage.
+
 ## Stack
 
 | Layer | Tech |
