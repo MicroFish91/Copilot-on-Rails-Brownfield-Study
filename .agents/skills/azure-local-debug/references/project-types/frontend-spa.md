@@ -29,6 +29,45 @@ Frontend SPAs communicate with backend services via HTTP during local developmen
 
 ---
 
+## Backend Proxy Detection
+
+Frontend SPAs often proxy API requests to a local backend during development (e.g., Vite's `server.proxy`, webpack's `devServer.proxy`, Angular's `proxy.conf.json`). When a proxy is detected **and** the proxy target matches a backend service in the same workspace, the frontend's dev-server task **must** depend on the backend's top-level startup task. This ensures the backend is accepting requests before the frontend starts and the browser makes its first API call.
+
+### Detection Signals
+
+| Framework | Proxy Config Location | Target Pattern |
+|-----------|----------------------|----------------|
+| Vite | `vite.config.*` → `server.proxy` | URL with `localhost:{port}` |
+| webpack / CRA | `package.json` → `"proxy"` field, or `src/setupProxy.js` | URL with `localhost:{port}` |
+| Angular | `proxy.conf.json` or `proxy.conf.js` | `target` field with `localhost:{port}` |
+| Next.js | `next.config.*` → `rewrites()` or `middleware.ts` | URL with `localhost:{port}` |
+
+### Matching Rule
+
+Extract the proxy target port and match it against the application ports of other services in the workspace:
+
+| Backend Project Type | Application Port |
+|---------------------|------------------|
+| Azure Functions | 7071 |
+| App Service / Container App | Framework-specific (e.g., 3000, 8080) |
+
+If the proxy target port matches a backend service's application port, record the dependency:
+
+```yaml
+frontendProxy:
+  from: {frontend-service-id}
+  to: {backend-service-id}
+  targetPort: {port}
+```
+
+### Task Dependency
+
+When a proxy dependency is detected, the frontend's dev-server task **must** depend on the backend's top-level startup task. The exact mechanism is IDE-specific (e.g., `dependsOn` in VS Code tasks) — see [ide/{ide}.md](../ide/) for the implementation format. See [multi-service.md § Startup Ordering](../multi-service.md) for the general orchestration rule.
+
+> **No proxy detected?** If no proxy configuration is found, or the proxy target does not match any backend service in the workspace, do not add a backend dependency. The frontend dev server starts independently.
+
+---
+
 ## Startup Command
 
 The startup command is the framework's dev server:

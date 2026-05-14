@@ -96,6 +96,32 @@ services:
 
 ---
 
+## Startup Ordering
+
+When a frontend service proxies API requests to a backend service in the same workspace (see [project-types/frontend-spa.md § Backend Proxy Detection](project-types/frontend-spa.md)), the frontend's dev-server task **must** depend on the backend's top-level startup task. This prevents the browser from making API calls before the backend is ready, which causes proxy errors (e.g., `ECONNREFUSED`).
+
+### Rule
+
+For each frontend service with a detected proxy dependency:
+
+1. Identify the backend service whose application port matches the proxy target
+2. Configure the frontend's dev-server task to depend on the backend's top-level startup task, using the IDE's task dependency mechanism (e.g., `dependsOn` in VS Code — see [ide/{ide}.md](ide/) for IDE-specific format)
+3. The backend's startup task already depends on its own build chain and emulators, so no additional wiring is needed
+
+### Resulting Chain (example)
+
+```
+Start Emulators ─┐
+                  ├─► backend build/watch ─► backend startup task ─► frontend dev task ─► browser
+install ─► clean ─┘
+```
+
+> **Multiple backends?** If a frontend proxies to more than one backend (e.g., separate paths to different services), the frontend must depend on all matched backend startup tasks.
+
+> **No proxy?** If no proxy is detected, the frontend dev task has no backend dependency and starts independently in the compound.
+
+---
+
 ## Compound Debug Configuration
 
 > ⛔ **MANDATORY:** When 2+ service roots are detected (including Frontend SPA projects), a compound debug configuration **must** be generated. A frontend SPA counts as a service root for this purpose — it does not need emulators, but it does need a debug config entry and inclusion in the compound.

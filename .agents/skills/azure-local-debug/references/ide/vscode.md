@@ -179,6 +179,10 @@ The top-level task uses the VS Code `func` task type and `$func-*` problem match
 
 The top-level task is the framework's dev server (e.g., `npm run dev` for Vite). No runtime build chain — the dev server handles everything. The task label follows the pattern `"{id} dev"` (see [project-types/frontend-spa.md](../project-types/frontend-spa.md) Runtime Wiring).
 
+> ⚠️ **Backend proxy dependency:** When the frontend proxies API requests to a backend service in the same workspace (see [project-types/frontend-spa.md § Backend Proxy Detection](../project-types/frontend-spa.md)), add the backend's top-level startup task to `dependsOn`. This ensures the backend is ready before the dev server starts and the browser makes its first API call. See [multi-service.md § Startup Ordering](../multi-service.md) for the general rule.
+
+**Without backend proxy:**
+
 ```json
 {
   "type": "shell",
@@ -196,6 +200,31 @@ The top-level task is the framework's dev server (e.g., `npm run dev` for Vite).
     }
   }
 }
+```
+
+**With backend proxy (e.g., frontend proxies `/api` → Functions host):**
+
+```json
+{
+  "type": "shell",
+  "label": "{id} dev",
+  "command": "npm run dev",
+  "options": { "cwd": "${workspaceFolder}/{service-root}" },
+  "dependsOn": ["{backend-startup-task-label}"],
+  "isBackground": true,
+  "problemMatcher": {
+    "owner": "vite",
+    "pattern": { "regexp": "^$" },
+    "background": {
+      "activeOnStart": true,
+      "beginsPattern": "VITE",
+      "endsPattern": "ready in \\d+"
+    }
+  }
+}
+```
+
+> Replace `{backend-startup-task-label}` with the actual task label from the matched backend service.
 ```
 
 > ⚠️ **IMPORTANT: Background tasks MUST have a real `problemMatcher`.**
