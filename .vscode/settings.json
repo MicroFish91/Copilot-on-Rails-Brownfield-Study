@@ -1,3 +1,4 @@
 {
+    "azureFunctions.showProjectWarning": false,
     "azureFunctions.validateEmulators": false
 }
