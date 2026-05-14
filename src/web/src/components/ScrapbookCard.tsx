@@ -30,7 +30,7 @@ export function ScrapbookCard({ photo, uploader, isMine, onClick, onDelete, onRe
         onClick={onClick}
         aria-label={`Open photo: ${photo.caption}`}
       >
-        <img src={photo.blobUrl} alt={photo.caption} loading="lazy" />
+        <img src={`/api/photos/${photo.id}/image`} alt={photo.caption} loading="lazy" />
       </button>
       <div className="scrapbook-card__body">
         <p className="scrapbook-card__caption">{photo.caption}</p>

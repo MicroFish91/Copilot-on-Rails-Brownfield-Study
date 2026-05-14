@@ -20,7 +20,7 @@ export function PhotoLightbox({ photo, onClose }: PhotoLightboxProps) {
   return (
     <div className="lightbox" role="dialog" aria-modal="true" aria-label={photo.caption} onClick={onClose}>
       <figure className="lightbox__inner" onClick={(e) => e.stopPropagation()}>
-        <img src={photo.blobUrl} alt={photo.caption} />
+        <img src={`/api/photos/${photo.id}/image`} alt={photo.caption} />
         <figcaption className="lightbox__caption">{photo.caption}</figcaption>
         <button type="button" className="lightbox__close" onClick={onClose} aria-label="Close">
           ×
