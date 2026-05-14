@@ -96,6 +96,17 @@ Check for required tools on the developer's machine. Only check tools relevant t
 | Docker Compose | `docker compose version` | Orchestrating emulators |
 | .NET SDK | `dotnet --version` | .NET projects |
 
+### IDE Extension Prerequisites
+
+Some IDEs rely on installed extensions to support the task types and problem matchers used in the generated launch/build configuration. Always consult the active IDE's reference file (e.g. [ide/vscode.md § Extension-Provided Task Types and Problem Matchers](ide/vscode.md)) to determine whether any extensions are required for the tasks being generated.
+
+1. Open the active IDE's reference file (`ide/{ide}.md`). If it contains an **Extension-Provided Task Types and Problem Matchers** section (or equivalent), read the lookup table.
+2. Cross-reference the task types and problem matchers that will be generated for the detected project type — these are visible in the IDE reference's Per-Project-Type subsections — against the lookup table.
+3. For each matched extension, use the IDE-specific detection command from the IDE reference to check whether it is installed.
+4. Record results in the plan's **IDE Extensions** prerequisite table.
+
+> If the IDE reference does not have an extension prerequisite section, skip this step — no extension prerequisites apply for that IDE.
+
 ---
 
 ## Step 5: Discover API Test Collection Opportunities

@@ -39,17 +39,20 @@ You **MUST** create this plan file BEFORE generating any configuration files. Pr
 
 ## Prerequisites
 
-<!-- List all required tools with detected versions. Mark installed vs. missing. -->
+<!-- List all required tools and IDE extensions with detected versions. Mark installed vs. missing. -->
 <!-- The user is responsible for installing any missing prerequisites before approving the plan. -->
 <!-- Do NOT install tools on behalf of the user during execution. -->
+<!-- IDE extension rows are included only when detected during inventory (see inventory.md § IDE Extension Prerequisites).
+     Each extension entry comes from the IDE reference file's lookup table (see ide/{ide}.md § Extension-Provided Task Types and Problem Matchers). -->
 
-| Tool | Required | Installed | Version | Install |
-|------|----------|-----------|---------|---------|
+| Tool / Extension | Required | Installed | Version | Install |
+|-----------------|----------|-----------|---------|---------|
 | Node.js & npm | ✅ | {✅/❌} | {version} | nodejs.org |
 | Azure Functions Core Tools | ✅ | {✅/❌} | {version} | aka.ms/azure-functions-core-tools |
 | Docker | ✅ | {✅/❌} | {version} | docker.com/get-started |
+| Azure Functions extension | ✅ | {✅/❌} | — | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) |
 
-> ⚠️ **Action required:** Please install any tools marked ❌ before approving this plan. The execution phase will not install prerequisites for you.
+> ⚠️ **Action required:** Please install any tools or extensions marked ❌ before approving this plan. The execution phase will not install prerequisites for you.
 
 ---
 

@@ -68,6 +68,29 @@ Two kinds of tasks:
 
 > Only add a subsection when the project type requires an IDE-specific task type or custom problem matcher (e.g., Azure Functions uses a custom `func` task type in VS Code). If the project type uses a standard shell command, no subsection is needed — the generic chain shape already covers it.
 
+When a project type's top-level task is a background process, it needs a problem matcher so the IDE knows when startup is complete. There are two sources:
+
+1. **Extension-provided named matcher** — a string reference such as `"$func-node-watch"`. Use this when an extension (see the Extension-Provided Task Types and Problem Matchers section in this file) registers the matcher. List the extension as a prerequisite.
+2. **Inline matcher** — an object defined directly in the task. Use this when no extension provides a named matcher. Refer to the IDE-specific reference (e.g. `ide/vscode.md § Authoring an Inline Background Problem Matcher`) for the required shape and guidance on deriving ready-signal patterns from the process's stdout.
+
+### Extension-Provided Task Types and Problem Matchers
+
+<!-- Optional section. Include when this IDE supports extensions that register additional task types
+     or problem matchers needed by generated build/launch configurations.
+     List each extension here so the inventory phase (inventory.md § IDE Extension Prerequisites)
+     can surface it as a prerequisite in the plan.
+
+     To add support for a new extension dependency:
+     1. Add a row to this section's lookup table.
+     The inventory phase cross-references this table against the task types and problem matchers
+     being generated, so no changes to project-type files are needed. -->
+
+<!-- Remove this section entirely if this IDE has no extension prerequisites. -->
+
+| Task Type / Problem Matcher | Runtime(s) | Extension Name | Extension ID | Install URL | Status |
+|-----------------------------|------------|----------------|--------------|-------------|--------|
+| `{task-type}` / `{$matcher}` | {runtime(s)} | {Extension Name} | `{publisher.name}` | [{label}]({url}) | {✅/🔲} |
+
 ### Example
 
 <!-- A worked example for an implemented runtime. -->

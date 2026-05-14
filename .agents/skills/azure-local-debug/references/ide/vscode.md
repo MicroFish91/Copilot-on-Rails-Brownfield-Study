@@ -143,15 +143,7 @@ This task is present only when emulators are required (i.e., when a `docker-comp
 
 > See [project-types/functions.md](../project-types/functions.md) for startup command, request mode, and per-runtime notes. This subsection covers VS Code-specific rendering only. Standard `"type": "shell"` project types do not need a subsection — the generic chain shape above already covers them.
 
-The top-level task uses the VS Code `func` task type provided by the Azure Functions extension. The launch configuration's `preLaunchTask` points to this task.
-
-| Runtime | Task Type | Problem Matcher | Status |
-|---------|-----------|----------------|--------|
-| node-ts | `func` | `$func-node-watch` | ✅ Implemented |
-| node-js | `func` | `$func-node-watch` | ✅ Implemented |
-| dotnet  | `func` | `$func-dotnet-watch` | ⛔ Not yet implemented |
-| python  | `func` | `$func-python-watch` | ⛔ Not yet implemented |
-| java    | `func` | `$func-java-watch` | ⛔ Not yet implemented |
+The top-level task uses the VS Code `func` task type and `$func-*` problem matchers, both provided by the Azure Functions extension — see the [Extension Dependency Lookup Table](#extension-dependency-lookup-table) for the full per-runtime matcher list and the extension prerequisite details.
 
 **node-ts** (has watch task):
 
@@ -210,7 +202,52 @@ The top-level task is the framework's dev server (e.g., `npm run dev` for Vite).
 > Avoid `"problemMatcher": []` on a task with `"isBackground": true`.
 > An empty matcher causes VS Code to display a blocking dialog:
 > *"The task has not exited and doesn't have a 'problemMatcher' defined."*
-> Always use a framework-specific background matcher from [project-types/frontend-spa.md](../project-types/frontend-spa.md).
+> Always use either a named matcher from the Extension Dependency Lookup Table below, or an inline matcher following the guide below.
+
+### General Instructions for Authoring an Inline VS Code Background Problem Matcher Template
+
+Use an inline matcher when the task runs a background process and **no extension provides a named matcher** for it. Determine `beginsPattern` and `endsPattern` by running the process manually and observing its stdout.
+
+```json
+{
+  "owner": "{framework-or-tool-name}",
+  "pattern": { "regexp": "^$" },
+  "background": {
+    "activeOnStart": true,
+    "beginsPattern": "{regex matching an early startup log line}",
+    "endsPattern": "{regex matching the ready/listening log line}"
+  }
+}
+```
+
+| Field | Value | Notes |
+|-------|-------|-------|
+| `owner` | Tool or framework name, lowercased | Deduplicate diagnostics — must be unique per task |
+| `pattern.regexp` | `"^$"` | No-op — suppresses error diagnostic parsing on task output |
+| `background.activeOnStart` | `true` | Resets the watcher each time the task starts |
+| `background.beginsPattern` | Regex for an early startup line | Signals the task has started; VS Code begins waiting |
+| `background.endsPattern` | Regex for the ready/listening line | Releases `preLaunchTask` — fires once, when the server is ready |
+
+> **Finding the right patterns:** Run the process manually and record stdout. Use a line that appears early as `beginsPattern`, and the "ready" or "listening" line as `endsPattern`. Avoid patterns that recur during hot-reload cycles.
+
+---
+
+## Extension-Provided Task Types and Problem Matchers
+
+Some VS Code task types (e.g. `"type": "func"`) and problem matchers (e.g. `$func-node-watch`) are **not built-in** — they are registered by installed VS Code extensions. If the required extension is absent, VS Code will report an unknown task type or an unresolved problem matcher, and the debug configuration will not work.
+
+> ⚠️ **MANDATORY:** When generating `tasks.json` entries that use any task type or problem matcher listed in the table below, you **MUST** add the corresponding extension as a prerequisite in the plan's **Prerequisites** table (see [plan-template.md § Prerequisites](../plan-template.md)). Check whether it is already installed using `code --list-extensions | grep <extension-id>` (treat exit code 0 as installed).
+
+### Extension Dependency Lookup Table
+
+> **To add a new extension dependency:** add a row here. The inventory phase cross-references this table against the task types and problem matchers being generated, so no changes to project-type files are needed.
+
+| Task Type / Problem Matcher | Runtime(s) | Extension Name | Extension ID | Marketplace URL | Status |
+|-----------------------------|------------|----------------|--------------|-----------------|--------|
+| `func` task type; `$func-node-watch` | node-ts, node-js | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ✅ Implemented |
+| `func` task type; `$func-dotnet-watch` | dotnet | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
+| `func` task type; `$func-python-watch` | python | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
+| `func` task type; `$func-java-watch` | java | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
 
 ---
 
@@ -262,7 +299,7 @@ Debug Configuration Checklist:
 ✅ <config-name> — <ready signal + curl result>
 ```
 
-One line per config (non-compound and compound). ✅ requires the ready signal observed AND curl confirmed.
+One line per launch config (non-compound and compound). ✅ requires the ready signal observed AND curl confirmed.
 
 > ⛔ Do NOT set status to `Implemented` until every stub in the Debug Configuration Checklist has been replaced with a real ✅ or ❌ result. A checklist with any remaining stubs is incomplete — go back and validate.
 
