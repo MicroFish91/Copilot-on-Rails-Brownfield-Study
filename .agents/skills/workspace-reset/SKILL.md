@@ -53,7 +53,9 @@ Stop any services that could hold file locks or recreate cleaned artifacts.
 |---|--------|---------|
 | 1 | **Check Docker availability** | Run `command -v docker && docker info` to verify Docker is available. If Docker is not installed or not running, warn and skip to Phase 3. |
 | 2 | **Stop and remove all Docker containers** | Run `docker stop $(docker ps -aq) 2>/dev/null; docker rm $(docker ps -aq) 2>/dev/null`. Skip gracefully if no containers exist. This is safe — the skill runs on a dedicated devbox. |
-| 3 | **Check for interfering processes** | Look for processes that might recreate artifacts (e.g., Azurite extension, running Node.js servers, file watchers). If found, warn the user and ask them to close the relevant VS Code extensions or processes before continuing. Common culprits: Azurite VS Code extension (recreates `.azurite/`), running `tsc --watch` or `npm run dev` (holds locks on `node_modules/`). |
+| 3 | **Free key ports** | Kill any processes listening on port **7071** (Azure Functions) and port **5173** (Vite dev server). Use `lsof -ti :7071 \| xargs kill -9 2>/dev/null; lsof -ti :5173 \| xargs kill -9 2>/dev/null`. Skip gracefully if nothing is listening. These ports are hardcoded because this skill only targets the study project. |
+| 4 | **Kill all VS Code terminals** | Run `kill $(ps aux \| grep -E '[t]erminal' \| awk '{print $2}') 2>/dev/null` or, more reliably, use the VS Code CLI: `code --command workbench.action.terminal.killAll 2>/dev/null`. This clears any hidden terminal sessions from previous study participants that may be running background processes. Skip gracefully if nothing is found. |
+| 5 | **Check for interfering processes** | Look for processes that might recreate artifacts (e.g., Azurite extension, running Node.js servers, file watchers). If found, warn the user and ask them to close the relevant VS Code extensions or processes before continuing. Common culprits: Azurite VS Code extension (recreates `.azurite/`), running `tsc --watch` or `npm run dev` (holds locks on `node_modules/`). |
 
 ---
 
