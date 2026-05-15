@@ -11,10 +11,17 @@ import type {
 
 export class AzureBlobStorageService implements IBlobStorageService {
   private readonly container: ContainerClient;
+  private initialized = false;
 
   constructor(input: { connectionString: string; containerName: string }) {
     const service = BlobServiceClient.fromConnectionString(input.connectionString);
     this.container = service.getContainerClient(input.containerName);
+  }
+
+  private async ensureContainer(): Promise<void> {
+    if (this.initialized) return;
+    await this.container.createIfNotExists();
+    this.initialized = true;
   }
 
   async put(
@@ -22,6 +29,7 @@ export class AzureBlobStorageService implements IBlobStorageService {
     body: Buffer,
     options: PutBlobOptions,
   ): Promise<BlobInfo> {
+    await this.ensureContainer();
     const blockBlob = this.container.getBlockBlobClient(blobName);
     await blockBlob.uploadData(body, {
       blobHTTPHeaders: { blobContentType: options.contentType },

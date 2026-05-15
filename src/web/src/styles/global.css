@@ -62,10 +62,17 @@ button {
   color: white;
   padding: 0.55rem 1rem;
   cursor: pointer;
-  transition: transform 0.05s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
 }
 button:disabled {
   opacity: 0.55;
@@ -85,6 +92,7 @@ button.link,
 button.link:hover,
 .link:hover {
   color: var(--ink);
+  opacity: 0.8;
 }
 .link--danger {
   color: #b03939;
@@ -101,10 +109,20 @@ input[type='password'] {
   background: white;
   font: inherit;
   color: var(--ink);
+  cursor: text;
+  caret-color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input[type='text']:hover,
+input[type='email']:hover,
+input[type='password']:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 input:focus {
-  outline: 2px solid var(--accent-soft);
-  outline-offset: 1px;
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 label {
