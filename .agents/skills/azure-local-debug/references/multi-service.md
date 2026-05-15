@@ -128,6 +128,6 @@ install ─► clean ─┘
 
 The compound configuration uses service IDs from this phase. One entry per service using its assigned ID.
 
-> ⚠️ The compound references the shared "Start Emulators" task/step only when emulators are required. Omit it when no emulators are needed.
+> ⚠️ **Do not add `preLaunchTask: "Start Emulators"` to the compound.** Emulator startup is owned by each service's task chain via `dependsOn`. Putting it on the compound causes the emulator task to run twice — once from the compound and again from the task chain — which tears down containers mid-startup. The compound only groups launch configurations together.
 
 See the active IDE adapter in [ide/](ide/) for the IDE-specific compound configuration format. See [project-types/frontend-spa.md](project-types/frontend-spa.md) for SPA-specific debug config, dev-server task, and framework detection rules.

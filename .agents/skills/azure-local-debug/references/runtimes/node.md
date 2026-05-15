@@ -82,7 +82,7 @@ Add to `package.json` `"scripts"`:
 
 ```json
 {
-  "emulators:start": "docker compose down && docker compose up -d",
+  "emulators:start": "docker compose up -d",
   "emulators:stop": "docker compose down",
   "emulators:clean": "docker compose down && rm -rf {data-dirs}"
 }

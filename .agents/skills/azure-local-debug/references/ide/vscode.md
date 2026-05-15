@@ -107,10 +107,12 @@ This task is present only when emulators are required (i.e., when a `docker-comp
 {
   "type": "shell",
   "label": "Start Emulators",
-  "command": "docker compose down && docker compose up -d",
+  "command": "docker compose up -d",
   "problemMatcher": []
 }
 ```
+
+> The command uses `docker compose up -d` so the task is **idempotent** — safe to run multiple times without tearing down running containers. For a full reset, use the `emulators:clean` convenience script.
 
 ### Runtime Task Reference
 
@@ -141,7 +143,7 @@ This task is present only when emulators are required (i.e., when a `docker-comp
 
 ### Per Project Type: Azure Functions
 
-> See [project-types/functions.md](../project-types/functions.md) for startup command, request mode, and per-runtime notes. This subsection covers VS Code-specific rendering only. Standard `"type": "shell"` project types do not need a subsection — the generic chain shape above already covers them.
+> See [project-types/functions.md](../project-types/functions.md) for startup command, request mode, and per-runtime notes. This subsection covers VS Code-specific rendering only.
 
 The top-level task uses the VS Code `func` task type and `$func-*` problem matchers, both provided by the Azure Functions extension — see the [Extension Dependency Lookup Table](#extension-dependency-lookup-table) for the full per-runtime matcher list and the extension prerequisite details.
 
@@ -150,11 +152,12 @@ The top-level task uses the VS Code `func` task type and `$func-*` problem match
 ```json
 {
   "type": "func",
-  "label": "func: host start",
   "command": "host start",
+  "label": "func: host start",
   "problemMatcher": "$func-node-watch",
   "isBackground": true,
-  "dependsOn": ["npm watch", "Start Emulators"]
+  "dependsOn": ["npm watch", "Start Emulators"],
+  "runOptions": { "instanceLimit": 1 }
 }
 ```
 
@@ -163,15 +166,16 @@ The top-level task uses the VS Code `func` task type and `$func-*` problem match
 ```json
 {
   "type": "func",
-  "label": "func: host start",
   "command": "host start",
+  "label": "func: host start",
   "problemMatcher": "$func-node-watch",
   "isBackground": true,
-  "dependsOn": ["npm install", "Start Emulators"]
+  "dependsOn": ["npm install", "Start Emulators"],
+  "runOptions": { "instanceLimit": 1 }
 }
 ```
 
-> `dependsOn`: first entry is the runtime-specific prerequisite — watch task for TypeScript, install task for JavaScript. Include `"Start Emulators"` only when emulators are required.
+> `dependsOn`: first entry is the runtime-specific prerequisite — watch task for TypeScript, install task for JavaScript. Include `"Start Emulators"` only when emulators are required (i.e., when a `docker-compose.yml` is generated).
 
 ### Example: frontend SPA tasks
 
@@ -190,13 +194,14 @@ The top-level task is the framework's dev server (e.g., `npm run dev` for Vite).
   "command": "npm run dev",
   "options": { "cwd": "${workspaceFolder}/{service-root}" },
   "isBackground": true,
+  "runOptions": { "instanceLimit": 1 },
   "problemMatcher": {
     "owner": "vite",
     "pattern": { "regexp": "^$" },
     "background": {
       "activeOnStart": true,
-      "beginsPattern": "VITE",
-      "endsPattern": "ready in \\d+"
+      "beginsPattern": ".",
+      "endsPattern": "Local:"
     }
   }
 }
@@ -212,20 +217,20 @@ The top-level task is the framework's dev server (e.g., `npm run dev` for Vite).
   "options": { "cwd": "${workspaceFolder}/{service-root}" },
   "dependsOn": ["{backend-startup-task-label}"],
   "isBackground": true,
+  "runOptions": { "instanceLimit": 1 },
   "problemMatcher": {
     "owner": "vite",
     "pattern": { "regexp": "^$" },
     "background": {
       "activeOnStart": true,
-      "beginsPattern": "VITE",
-      "endsPattern": "ready in \\d+"
+      "beginsPattern": ".",
+      "endsPattern": "Local:"
     }
   }
 }
 ```
 
-> Replace `{backend-startup-task-label}` with the actual task label from the matched backend service.
-```
+> Replace `{backend-startup-task-label}` with the actual task label from the matched backend service (e.g., `"func: host start"` for Azure Functions).
 
 > ⚠️ **IMPORTANT: Background tasks MUST have a real `problemMatcher`.**
 > Avoid `"problemMatcher": []` on a task with `"isBackground": true`.
@@ -259,13 +264,49 @@ Use an inline matcher when the task runs a background process and **no extension
 
 > **Finding the right patterns:** Run the process manually and record stdout. Use a line that appears early as `beginsPattern`, and the "ready" or "listening" line as `endsPattern`. Avoid patterns that recur during hot-reload cycles.
 
+### ANSI Escape Code Considerations
+
+Terminal output from dev servers (Vite, webpack, etc.) often contains **ANSI color/formatting escape sequences** that are invisible to the user but present in the raw output stream that VS Code matches against. This can silently break problem matcher patterns.
+
+**Rules:**
+
+1. **Prefer plain-text anchors** — Match on words or punctuation that won't have escape sequences injected mid-token (e.g., `"Local:"`, `"listening on"`, `"Compiled"`). Avoid patterns that rely on adjacent characters being contiguous (e.g., `"ready in \\d+"` can break if ANSI codes separate "in" from the digits).
+2. **Keep `beginsPattern` broad** — Use `"."` (any output) or a short keyword. The begins pattern only signals "task started" and doesn't need precision.
+3. **Test patterns by running the command in the VS Code integrated terminal** and inspecting the raw output (Terminal → right-click → "Select All", paste into a text file to see escape sequences).
+
+### Idempotent Re-run (F5 Again)
+
+When the user presses F5 while background tasks from a previous session are still running, VS Code may show a blocking "Waiting for preLaunchTask" dialog or a termination picker. To ensure clean re-runs:
+
+1. **`runOptions.instanceLimit`** — Add `"runOptions": { "instanceLimit": 1 }` to every `isBackground: true` task. This prevents VS Code from launching duplicate instances of long-running tasks, avoiding the "task is already running" prompt on re-launch.
+2. **Problem matcher must re-fire** — After the old instance is killed and a new one starts, the `endsPattern` must match again on the fresh output. Patterns that only appear once in a process lifetime (not on restart) will cause the "Waiting for preLaunchTask" dialog on subsequent runs.
+3. **`activeOnStart: true`** — Always include this in background problem matchers. It resets the matcher state when the task restarts, allowing the begins/ends cycle to repeat.
+
+```json
+{
+  "isBackground": true,
+  "runOptions": { "instanceLimit": 1 },
+  "problemMatcher": {
+    "owner": "...",
+    "pattern": { "regexp": "^$" },
+    "background": {
+      "activeOnStart": true,
+      "beginsPattern": "...",
+      "endsPattern": "..."
+    }
+  }
+}
+```
+
 ---
 
-## Extension-Provided Task Types and Problem Matchers
+## Extension-Provided Problem Matchers
 
-Some VS Code task types (e.g. `"type": "func"`) and problem matchers (e.g. `$func-node-watch`) are **not built-in** — they are registered by installed VS Code extensions. If the required extension is absent, VS Code will report an unknown task type or an unresolved problem matcher, and the debug configuration will not work.
+Some problem matchers (e.g. `$func-node-watch`) are **not built-in** — they are registered by installed VS Code extensions. If the required extension is absent, VS Code will report an unresolved problem matcher, and the task will not signal readiness correctly.
 
-> ⚠️ **MANDATORY:** When generating `tasks.json` entries that use any task type or problem matcher listed in the table below, you **MUST** add the corresponding extension as a prerequisite in the plan's **Prerequisites** table (see [plan-template.md § Prerequisites](../plan-template.md)). Check whether it is already installed using `code --list-extensions | grep <extension-id>` (treat exit code 0 as installed).
+> ⚠️ **MANDATORY:** When generating `tasks.json` entries that use any problem matcher listed in the table below, you **MUST** add the corresponding extension as a prerequisite in the plan's **Prerequisites** table (see [plan-template.md § Prerequisites](../plan-template.md)). Check whether it is already installed using `code --list-extensions | grep <extension-id>` (treat exit code 0 as installed).
+
+> Extension-provided **task types** (e.g., `"type": "func"`) and **problem matchers** (e.g., `$func-node-watch`) both require the corresponding extension to be installed. The task type handles command invocation — use `"command": "host start"` (the extension prepends the CLI name automatically).
 
 ### Extension Dependency Lookup Table
 
@@ -273,10 +314,10 @@ Some VS Code task types (e.g. `"type": "func"`) and problem matchers (e.g. `$fun
 
 | Task Type / Problem Matcher | Runtime(s) | Extension Name | Extension ID | Marketplace URL | Status |
 |-----------------------------|------------|----------------|--------------|-----------------|--------|
-| `func` task type; `$func-node-watch` | node-ts, node-js | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ✅ Implemented |
-| `func` task type; `$func-dotnet-watch` | dotnet | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
-| `func` task type; `$func-python-watch` | python | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
-| `func` task type; `$func-java-watch` | java | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
+| `$func-node-watch` | node-ts, node-js | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ✅ Implemented |
+| `$func-dotnet-watch` | dotnet | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
+| `$func-python-watch` | python | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
+| `$func-java-watch` | java | Azure Functions | `ms-azuretools.vscode-azurefunctions` | [View on Marketplace](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) | ⛔ Not yet implemented |
 
 ---
 
@@ -288,14 +329,13 @@ Some VS Code task types (e.g. `"type": "func"`) and problem matchers (e.g. `$fun
 {
   "name": "Start All",
   "configurations": ["{id} (debug)", "..."],
-  "preLaunchTask": "Start Emulators",
   "stopAll": true
 }
 ```
 
 One entry per service using its assigned ID from [multi-service.md](../multi-service.md).
 
-> ⚠️ `preLaunchTask` is **conditional**: include `"preLaunchTask": "Start Emulators"` only when emulators are required (i.e., the `"Start Emulators"` task exists in `tasks.json`). Omit the field entirely when no emulators are needed.
+> ⚠️ **No `preLaunchTask` on the compound.** Emulator startup is handled by each service's task chain via `dependsOn` — not by the compound. This avoids the `"Start Emulators"` task running twice (once from the compound and again from the task chain).
 
 ---
 

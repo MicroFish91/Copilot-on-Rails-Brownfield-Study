@@ -83,12 +83,11 @@ The startup command is the framework's dev server:
 
 ## Runtime Wiring
 
-<!-- Combines with runtimes/{rt}.md (protocol, port) and ide/{ide}.md to produce IDE debug config.
-     Debug port values from runtimes/{rt}.md do not apply here — the browser debugger connects via the dev server URL. -->
+<!-- Combines with runtimes/{rt}.md (protocol, port) and ide/{ide}.md to produce IDE task config. -->
 
-| Runtime | Startup command | Startup task label | Request Mode | Notes |
+| Runtime | Startup command | Startup task label | Debug Config | Notes |
 |---------|----------------|-------------------|--------------|-------|
-| node | `npm run dev` | `{id} dev` | `launch` | IDE launches a browser; dev server is a prerequisite task |
+| node | `npm run dev` | `{id} dev` | `launch` (chrome) | Chrome config's `preLaunchTask` triggers the dev server task chain |
 
 ---
 
@@ -96,11 +95,13 @@ The startup command is the framework's dev server:
 
 Each frontend framework emits different console output when the dev server is ready. These patterns are used for background problem matchers in the IDE build configuration.
 
-| Framework | Detection | Ready Pattern (begins) | Ready Pattern (ends) |
-|-----------|----------|----------------------|---------------------|
-| Vite | `vite.config.*` or `vite` in devDependencies | `VITE` | `ready in \d+` |
-| Next.js | `next.config.*` or `next` in dependencies | `\s*ready` | `started server on` |
-| Angular | `angular.json` | `Compiling` | `Compiled successfully` |
-| Create React App | `react-scripts` in dependencies | `Starting the development server` | `Compiled` |
+| Framework | Detection | Ready Pattern (endsPattern) |
+|-----------|----------|-----------------------------|
+| Vite | `vite.config.*` or `vite` in devDependencies | `Local:` |
+| Next.js | `next.config.*` or `next` in dependencies | `Ready in` |
+| Angular | `angular.json` | `Compiled successfully` |
+| Create React App | `react-scripts` in dependencies | `Compiled` |
+
+> **Pattern selection guidance:** Choose patterns that are plain-text anchors resistant to ANSI escape code interference. See the active IDE adapter in [ide/](../ide/) for ANSI considerations and idempotent re-run rules.
 
 > All background problem matchers must include `"activeOnStart": true` and a no-op error pattern (`"regexp": "^$"`). The `owner` field should be set to the framework name (lowercased).

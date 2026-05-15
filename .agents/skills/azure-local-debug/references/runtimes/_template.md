@@ -46,7 +46,7 @@ Chain shape (startup task comes from the project type):
 
 | Step | Command | Purpose | Background? |
 |------|---------|---------|------------|
-| Start Emulators | `docker compose down && docker compose up -d` | Start all emulator services | No |
+| Start Emulators | `docker compose up -d` | Start all emulator services (idempotent) | No |
 
 See the active IDE adapter in [ide/{ide}.md](../ide/) for how these build steps are rendered into IDE-specific task configuration.
 
